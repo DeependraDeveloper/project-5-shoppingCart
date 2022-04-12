@@ -6,18 +6,18 @@ const isValid=val=>{
     return true
 }
 
-const isValidRequestBody = function(requestBody) {
+const isValidRequestBody = requestBody=> {
     return Object.keys(requestBody).length > 0; // it checks, is there any key is available or not in request body
 };
 
 const isValidObjectId=objectId => mongoose.Types.ObjectId.isValid(objectId)
 
-const isValidTitle=title=>['Mr','Mrs','Miss'].indexOf(title) !== -1
-  
+const validString = value=> {
+    if (typeof value === 'string' && value.trim().length === 0) return false //it checks whether the string contain only space or not 
+    return true;
+}
 
-
-
-module.exports={isValid,isValidObjectId,isValidRequestBody,isValidTitle}
+module.exports={isValid,isValidObjectId,isValidRequestBody,validString}
 
 
 
