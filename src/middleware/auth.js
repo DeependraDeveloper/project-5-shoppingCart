@@ -2,25 +2,24 @@ const jwt = require("jsonwebtoken");
 
 const auth = async (req, res, next) => {
   try {
-    let token = req.headers("authorization", "Bearer Token");
+    const token = req.header("Authorization", "Bearer Token");
     if (!token)
       return res
         .status(400)
         .json({ status: false, msg: " token is not preesnt" });
 
-    const decodeToken = await jwt.verify(token, "project-5");
+    let splitToken = token.split(' ')
 
+    let decodeToken = jwt.decode(splitToken[1], 'project-5')
     if (!decodeToken) {
-      return res.status(403).send({
-        status: false,
-        message: `Invalid authentication token in request`,
-      });
+        return res.status(403).send({ status: false, message: `Invalid authentication token in request ` })
     }
-    if (Date.now() > decodeToken.exp * 1000) {
-      return res.status(404).send({
-        status: false,
-        message: `Session Expired, please login again`,
-      });
+    if (Date.now() > (decodeToken.exp) * 1000) {
+        return res.status(404).send({ status: false, message: `Session Expired, please login again` })
+    }
+     let verify =  jwt.verify(splitToken[1], 'project-5')
+    if (!verify) {
+        return res.status(403).send({ status: false, message: `Invalid authentication token in request` })
     }
     req.userId = decodeToken.userId;
 
@@ -29,5 +28,7 @@ const auth = async (req, res, next) => {
     res.status(500).json({ status: false, msg: error.message });
   }
 };
+
+
 
 module.exports={auth}
