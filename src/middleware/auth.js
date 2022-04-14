@@ -1,34 +1,29 @@
 const jwt = require("jsonwebtoken");
 
-const auth = async (req, res, next) => {
+//authentication and authoriaztion middleware~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+
+const Auth = async function (req, res, next) {
   try {
-    const token = req.header("Authorization", "Bearer Token");
-    if (!token)
-      return res
-        .status(400)
-        .json({ status: false, msg: " token is not preesnt" });
-
-    let splitToken = token.split(' ')
-
-    let decodeToken = jwt.decode(splitToken[1], 'project-5')
-    if (!decodeToken) {
-        return res.status(403).send({ status: false, message: `Invalid authentication token in request ` })
+    const authHeader = req.header("Authorization", "Bearer Token");
+    // console.log(authHeader)
+    if (!authHeader) {
+      res
+        .status(401)
+        .send({ status: false, Message: "authentication token is missing." });
+    } else {
+      let tokenindex = authHeader.split(" ")[1];
+      // console.log(tokenindex)
+      let decodedtoken = jwt.verify(tokenindex, "Dp2022");
+      //console.log(decodedtoken)
+      if (decodedtoken) {
+        req.user = decodedtoken;
+        // console.log(req.user)
+        next();
+      }
     }
-    if (Date.now() > (decodeToken.exp) * 1000) {
-        return res.status(404).send({ status: false, message: `Session Expired, please login again` })
-    }
-     let verify =  jwt.verify(splitToken[1], 'project-5')
-    if (!verify) {
-        return res.status(403).send({ status: false, message: `Invalid authentication token in request` })
-    }
-    req.userId = decodeToken.userId;
-
-    next();
-  } catch (error) {
-    res.status(500).json({ status: false, msg: error.message });
+  } catch (err) {
+    res.status(500).send({ status: false, message: err.message });
   }
 };
 
-
-
-module.exports={auth}
+module.exports.Auth = Auth;
