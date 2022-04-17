@@ -1,16 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/userContoller");
 
-const mid=require('../middleware/auth')
+//routers handlers
+const userController = require('../controllers/Usercontroller');
+const productController=require("../controllers/productController")
+const cartController=require("../Controllers/cartController")
+const mid=require("../middlewares/auth")
 
 
+// User APIs
+router.post('/register',userController.registerUser)
+router.post('/login', userController.login)
+router.get('/user/:userId/profile', mid.Auth, userController.getUser)
+router.put('/user/:userId/profile', mid.Auth, userController.updateUser)
 
-//User API's
+// Product APIs
+router.post('/products', productController.CreateProduct)
+router.get('/products', productController.GetProducts)
+router.get('/products/:productId', productController.getProductById)
+router.put('/products/:productId', productController.update)
+router.delete('/products/:productId', productController.productDel)
 
-router.post("/register", userController.createUser);   //CreateUser
-router.post("/login", userController.login);          //LoginUser
-router.get("/user/:userId/profile",mid.auth, userController.getProfile);      //getProfile
-router.put("/user/:userId/profile",mid.auth, userController.updateProfile);    //updateProfile
+// Cart Api's
+
+router.post('/users/:userId/cart',midAuth, cartController.createCart)
+router.put('/users/:userId/cart', mid.Auth, cartController.updateCart)
+router.get('/users/:userId/cart', mid.Auth, cartController.getCart)
+router.delete('/users/:userId/cart', mid.Auth, cartController.deleteCart)
 
 module.exports=router
