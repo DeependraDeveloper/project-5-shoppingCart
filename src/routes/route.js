@@ -28,4 +28,11 @@ router.put('/users/:userId/cart', mid.Auth, cartController.updateCart)
 router.get('/users/:userId/cart', mid.Auth, cartController.getCart)
 router.delete('/users/:userId/cart', mid.Auth, cartController.deleteCart)
 
+
+
+// Order API's 
+
+router.post('/users/:userId/orders', mid.Auth, orderController.createOrder)
+router.put('/users/:userId/orders', mid.Auth, orderController.updateOrder)
+
 module.exports=router
