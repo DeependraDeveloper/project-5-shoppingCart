@@ -129,56 +129,58 @@ const updateOrder = async (req, res) => {
     if (!validator.isValidrequestBody(req.body))
       return res.status(400).json({
         status: false,
-        message:
-          "Invalid request body. Please provide the the input to proceed.",
+        message: "Invalid parameters. Please provide order details",
       });
 
     //extract params
     const { orderId, status } = req.body;
 
-    if (!validator.isValidObjectId(userId)) {
+    if (!validator.isValid(orderId) && !validator.isValid(status))
+      return res
+        .status(400)
+        .json({ status: false, msg: "orderId or status is missing" });
+
+    if (!validator.isValidObjectId(userId))
       return res
         .status(400)
         .json({ status: false, message: "Invalid userId " });
-    }
-    const searchUser = await userModel.findOne({ _id: userId });
 
-    if (!searchUser)
+    const findUser = await userModel.findOne({ _id: userId });
+
+    if (!findUser)
       return res.status(400).json({
         status: false,
-        message: `user doesn't exists for ${userId}`,
+        message: `user doesn't exists with ${userId}`,
       });
 
     //Authentication & authorization
     if (req.user.userId != userId)
-      return res
-        .status(401)
-        .send({
-          status: false,
-          message: `Unauthorized access! User's info doesn't match`,
-        });
+      return res.status(401).send({
+        status: false,
+        message: `Unauthorized access! User's info doesn't match`,
+      });
 
-    if (!orderId) {
+    const findOrder = await orderModel.findOne({ _id: orderId });
+
+    if (!findOrder) {
       return res.status(400).send({
         status: false,
-        message: `Order doesn't exists for ${orderId}`,
+        message: ` ${orderId} does mot exists`,
       });
     }
 
     //verifying does the order belongs to user or not.
-    isOrderBelongsToUser = await orderModel.findOne({ userId: userId });
-    if (!isOrderBelongsToUser) {
-      return res.status(400).send({
+    let isOrderBelongsToUser = await orderModel.findOne({ userId: userId });
+    if (!isOrderBelongsToUser)
+      return res.status(400).json({
         status: false,
         message: `Order doesn't belongs to ${userId}`,
       });
-    }
 
     if (!status) {
       return res.status(400).send({
         status: true,
-        message:
-          "Mandatory paramaters not provided. Please enter current status of the order.",
+        message: " Please enter current status of the order.",
       });
     }
     if (!validator.validstatus(status)) {
@@ -200,56 +202,46 @@ const updateOrder = async (req, res) => {
             },
             { new: true }
           );
-          return res
-            .status(200)
-            .json({
-              status: true,
-              message: `Successfully updated the order details.`,
-              data: updateStatus,
-            });
+          return res.status(200).json({
+            status: true,
+            message: `Successfully updated the order details.`,
+            data: updateStatus,
+          });
         }
 
         //if order is in completed status then nothing can be changed/updated.
         if (isOrderBelongsToUser["status"] == "completed") {
-          return res
-            .status(400)
-            .json({
-              status: false,
-              message: `Unable to update or change the status, because it's already in completed status.`,
-            });
+          return res.status(400).json({
+            status: false,
+            message: `Unable to update or change the status, because it's already in completed status.`,
+          });
         }
 
         //if order is already in cancelled status then nothing can be changed/updated.
         if (isOrderBelongsToUser["status"] == "cancelled") {
-          return res
-            .status(400)
-            .json({
-              status: false,
-              message: `Unable to update or change the status, because it's already in cancelled status.`,
-            });
+          return res.status(400).json({
+            status: false,
+            message: `Unable to update or change the status, because it's already in cancelled status.`,
+          });
         }
       }
     }
     //for cancellable : false
     if (isOrderBelongsToUser["status"] == "completed") {
       if (status) {
-        return res
-          .status(400)
-          .json({
-            status: true,
-            message: `Cannot update or change the status, because it's already in completed status.`,
-          });
+        return res.status(400).json({
+          status: true,
+          message: `Cannot update or change the status, because it's already in completed status.`,
+        });
       }
     }
 
     if (isOrderBelongsToUser["status"] == "cancelled") {
       if (status) {
-        return res
-          .status(400)
-          .json({
-            status: true,
-            message: `Cannot update or change the status, because it's already in cancelled status.`,
-          });
+        return res.status(400).json({
+          status: true,
+          message: `Cannot update or change the status, because it's already in cancelled status.`,
+        });
       }
     }
 
@@ -268,13 +260,11 @@ const updateOrder = async (req, res) => {
           { new: true }
         );
 
-        return res
-          .status(200)
-          .json({
-            status: true,
-            message: `Successfully updated the order details.`,
-            data: updatedOrderDetails,
-          });
+        return res.status(200).json({
+          status: true,
+          message: `Successfully updated the order details.`,
+          data: updatedOrderDetails,
+        });
       }
     }
   } catch (err) {
@@ -282,4 +272,7 @@ const updateOrder = async (req, res) => {
   }
 };
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module.exports = { createOrder, updateOrder };
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
